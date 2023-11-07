@@ -1,4 +1,4 @@
-package com.chatgpt_test.entity;
+package com.chatgpt_test.dto;
 
 import java.time.LocalDateTime;
 
@@ -14,7 +14,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-public class ContentData {
+public class ContentDataForm {
 	 	@Id
 	    @GeneratedValue(strategy = GenerationType.IDENTITY)
 	    private Integer id;
@@ -24,7 +24,7 @@ public class ContentData {
 	    @Column(length = 200)
 	    private String subject;
 	 	
-	 	@NotEmpty(message="제목은 필수항목입니다.")
+	 	@NotEmpty(message="내용은 필수항목입니다.")
 	    @Column(columnDefinition = "TEXT")
 	    private String content;
 

@@ -1,0 +1,24 @@
+<html layout:decorate="~{layout}">
+<div layout:fragment="content" class="container my-3">
+    <table class="table">
+        <thead class="table-dark">
+            <tr>
+                <th>번호</th>
+                <th>제목</th>
+                <th>내용</th>
+                <th>작성일시</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="content, loop : ${contentList}">
+                <td th:text="${loop.count}"></td>
+                <td> <a th:href="@{|/contents/detail/${content.id}|}" th:text="${content.subject}"></a></td>
+                <td th:text="${content.content}"></td>
+                <td th:text="${#temporals.format(content.createDate, 'yyyy-MM-dd HH:mm')}"></td>
+            </tr>
+        </tbody>
+    </table>
+    
+     <a th:href="@{/contents/insertform}" class="btn btn-primary" style="float:right">등록하기</a>
+</div>
+</html>
