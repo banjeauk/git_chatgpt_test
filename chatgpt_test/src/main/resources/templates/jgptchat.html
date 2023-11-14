@@ -1,0 +1,258 @@
+<link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+<link rel="stylesheet" type="text/css" th:href="@{/chat.css}">
+<script>
+	// 메세지 태그 생성
+    function createMessageTag(LR_className, message, time) {
+        // 형식 가져오기
+        let chatLi = $('div.incoming_msg div div').clone();
+ 
+        // 값 채우기
+        chatLi.addClass(LR_className);
+        chatLi.find('.received_msg').find('span').text(message);
+        chatLi.find('.received_withd_msg').find('span').text(time);
+ 
+        return chatLi;
+    }
+ 
+    // 메세지 태그 append
+    function appendMessageTag(LR_className, message, time) {
+        const chatLi = createMessageTag(LR_className, message, time);
+ 		debugger;
+        $('#msg_history:not(.format) ul').append(chatLi);
+ 
+        // 스크롤바 아래 고정
+        $('#msg_history').scrollTop($('div.msg_history').prop('scrollHeight'));
+    }
+	
+	let idNum = 0;
+	function test() {
+		reqmsg("O","메세지","123456789");
+		
+	}
+	
+	function test2() {
+		reqmsg("I","메세지","123456789");
+	}
+	
+	function test3() {
+		reqmsg("I","loading","");
+	}
+	
+	var inindex = 0; 
+	function reqmsg(type,msg,img,msgdate) {
+		var ocontainer = document.getElementById("gptchatmsg");
+		var ocontainer_msg = ocontainer.getElementsByClassName("msg")[0];
+	
+		var onewmsg = document.createElement("div");
+		var onewblank = document.createElement("div");
+	
+	if(type == "I")
+	{
+		if(msg != 'loading'){
+		document.getElementById("inindex_loading").parentNode.removeChild(document.getElementById("inindex_loading"));
+		}
+		
+		onewmsg.className="incoming_msg";
+		if(msg == 'loading'){
+		onewmsg.id = "inindex_loading";
+		onewmsg.innerHTML = 
+		"<div class='incoming_msg_img'> <img src='https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Ft1.daumcdn.net%2Fcfile%2Ftistory%2F233F6D505786DA870A'' alt='sunil''> </div>\n"+
+		"<div class='received_msg'>\n"+		
+			"<div  class='received_withd_msg'>\n"+
+			"<p>"+msg+"</p>\n"+
+			"<span class='time_date'>"+msgdate+"</span></div>\n"			
+		;
+		}else if(msg != ''){
+		onewmsg.id = "inindex_"+inindex;
+		onewmsg.innerHTML = 
+		"<div class='incoming_msg_img'> <img src='https://ptetutorials.com/images/user-profile.png'' alt='sunil''> </div>\n"+
+		"<div class='received_msg'>\n"+		
+			"<div  class='received_withd_msg'>\n"+
+			"<p>"+msg+"</p>\n"+
+			"<span class='time_date'>"+msgdate+"</span></div>\n"			
+		;
+		}else{
+		onewmsg.id = "inindex_"+inindex;
+		onewmsg.innerHTML = 
+		"<div class='incoming_msg_img'> <img src='https://ptetutorials.com/images/user-profile.png'' alt='sunil''> </div>\n"+
+		"<div class='received_msg'>\n"+		
+			"<div  class='received_withd_msg'>\n"+
+			"<img src='data:image/jpeg;base64,"+img+"' class='img-fluid'>\n"+
+			"<span class='time_date'>"+msgdate+"</span></div>\n"			
+		;	
+		
+		inindex++;
+		}
+	
+	}else{
+		onewmsg.className="outgoing_msg";
+		onewmsg.innerHTML = 
+		"<div class='sent_msg'>\n"+
+			"<p>"+msg+"</p>\n"+
+			"<span class='time_date'>"+msgdate+"</span></div>\n";
+	}
+	
+	onewmsg.innerHTML +=
+    "<div class=\"clear\">\n"+
+    "</div>";
+	
+	onewblank.className="blank";
+	
+	ocontainer_msg.appendChild(onewmsg);
+	ocontainer_msg.appendChild(onewblank);
+	
+	
+	
+	ocontainer_msg.scrollTop = ocontainer_msg.scrollHeight;
+		
+	}
+	
+	
+	function reqinputkey(event) {
+	
+    if (event.keyCode === 13) {
+        setchatgptdata();
+    }
+    }
+	
+	function setchatgptdata(chk){
+	if($("#chatreq").val() == ''){
+		alert('메세지를 입력하세요');
+		return;
+	}
+			
+	$.ajax({
+                    url: "/gpt/getcurrenttime",
+                    type: 'POST',
+                    success:function(response){
+					var tresponse =  JSON.parse(response);
+					if(chk == "img"){
+					chatgptdataimgSend(tresponse.ctime);
+					}else{
+					chatgptdataSend(tresponse.ctime);	
+					}
+						
+					},
+					error:function(response){
+					}
+    });
+	
+	}
+	
+	
+	
+	
+	
+	function chatgptdataimgSend(time){
+								
+				reqmsg("O",$("#chatreq").val(),'',time);
+				reqmsg("I","loading","");
+                const data =$("#chatreq").val();
+                const chatForm = {
+                          msgdata:data
+                          };
+                $.ajax({
+                    url: "/gpt/reqchatgptimg",
+                    data: chatForm,
+                    type: 'POST',
+                    success:function(response){
+					
+					var tresponse =  JSON.parse(response);
+					reqmsg("I",'',tresponse.imgdata,tresponse.createDate);	
+					},
+					error:function(response){
+					}
+                });
+                
+                $("#chatreq").val('');
+   } 
+	
+	
+	
+	function chatgptdataSend(time){
+				
+				
+				reqmsg("O",$("#chatreq").val(),'',time);
+				reqmsg("I","loading","");
+                const data =$("#chatreq").val();
+                const chatForm = {
+                          msgdata:data
+                          };
+                $.ajax({
+                    url: "/gpt/reqchatgpt",
+                    data: chatForm,
+                    type: 'POST',
+                    success:function(response){
+					
+					var tresponse =  JSON.parse(response);
+					reqmsg("I",tresponse.msgdata,'',tresponse.createDate);	
+					},
+					error:function(response){
+					}
+                });
+                
+                $("#chatreq").val('');
+   } 
+	
+	
+</script>
+
+<script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<!------ bootstrap-datetimepicker ---------->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/3.0.0/css/bootstrap-datetimepicker.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.2/moment-with-locales.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/3.0.0/js/bootstrap-datetimepicker.min.js"></script>
+
+
+
+<html>
+<head>
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css" type="text/css" rel="stylesheet"
+
+
+
+</head>
+
+
+
+<body>
+<div class="container">
+<h3 class=" text-center">GPT CHAT TEST</h3>
+<div class="messaging">
+      <div class="inbox_msg">
+        
+        <div class="mesgs">
+          <div class="msg_history" id="gptchatmsg">
+			  <div class="msg">
+			  </div>
+            
+          </div>
+          <div class="type_msg">			  
+            <div class="input_msg_write">
+			  <form onsubmit="return false;">
+              <input id = "chatreq" type="text" onkeyup="reqinputkey(window.event);" class="write_msg" placeholder="Type a message" />
+              <button class="msg_send_btn" type="button" onclick="setchatgptdata();"><i class="fa fa-paper-plane-o" aria-hidden="true"></i></button>
+              <button class="msg_send_btn_img" value = "Image" type="button" onclick="setchatgptdata('img');"><i class="fa fa-paper-plane-o" aria-hidden="true"></i></button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      
+      
+      <input type = "button" value = "income" onclick="test();">
+      <input type = "button" value = "income" onclick="test2();">
+      <input type = "button" value = "loading" onclick="test3();">
+      <input type = "button" value = "img" onclick="setchatgptdata('img');">
+      
+    </div>
+</div>
+</body>
+</html>
+
+
+
+
